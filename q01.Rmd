@@ -1,0 +1,10 @@
+---
+title: "Questão 1"
+author: "Augusto Cesar Ribeiro Nunes - 13/0103004"
+date: "4 de maio de 2015"
+output: html_document
+---
+
+```{r}
+dados <- read_excel("Questao 1.xls")
+```
