@@ -1,0 +1,19 @@
+---
+title: "Questão 2 - Prova 1"
+author: "Augusto Cesar Ribeiro Nunes"
+date: "21 de maio de 2015"
+output: html_document
+---
+
+```{r preparacao}
+require(readr)
+require(timeDate)
+dados <- read_delim("Questao 2.csv", delim=";")
+dados$DIAST <- as.integer(difftime(strptime(dados$TN,format="%d/%m/%Y"), strptime(dados$T0, format="%d/%m/%Y")))
+```
+
+```{r hist_dens}
+hist(dados$IDADE)
+
+
+```

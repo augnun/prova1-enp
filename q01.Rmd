@@ -5,6 +5,56 @@ date: "4 de maio de 2015"
 output: html_document
 ---
 
-```{r}
-dados <- read_excel("Questao 1.xls")
+```{r preparacao}
+require(readr)
+require(NSM3)
+dados <- read_csv("Questao 1.csv")
 ```
+
+Queremos testar se houve efeito na intervenção no bairro onde já foi executado e estimar se esse efeito seria estatisticamente significativo para a região em estudo.
+```{r valoradd}
+for(i in 1:length(dados[,1])){
+  dados$Val_Ad[i] = dados$VV2007[i] - dados$VV2001[i]
+}
+
+
+```
+```{r histogramas}
+hist(dados$VV2001[which(dados$Grupo == "comparacao")], breaks = "scott")
+hist(dados$VV2007[which(dados$Grupo == "comparacao")], breaks = "scott")
+hist(dados$VV2001[which(dados$Grupo == "projeto")], breaks = "scott")
+hist(dados$VV2007[which(dados$Grupo == "projeto")], breaks = "scott")
+hist(dados$Val_Ad[which(dados$Grupo == "comparacao")], breaks = "fd")
+hist(dados$Val_Ad[which(dados$Grupo == "projeto")], breaks="fd")
+```
+
+```{r densidades}
+plot(density(dados$VV2001[which(dados$Grupo == "comparacao")]))
+plot(density(dados$VV2001[which(dados$Grupo == "projeto")]))
+plot(density(dados$VV2007[which(dados$Grupo == "comparacao")]))
+plot(density(dados$VV2007[which(dados$Grupo == "projeto")]))
+plot(density(dados$Val_Ad[which(dados$Grupo == "comparacao")]))
+plot(density(dados$Val_Ad[which(dados$Grupo == "projeto")]))
+```
+
+```{r testes}
+wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao")], dados$VV2001[which(dados$Grupo == "comparacao")], alternative="t")
+#p-valor < 2.2e-16
+
+wilcox.test(dados$VV2007[which(dados$Grupo == "projeto")], dados$VV2001[which(dados$Grupo == "projeto")], alternative="t")
+#p-valor == 0.0009077
+
+RFPW(dados$Val_Ad[which(dados$Grupo == "comparacao")])
+#Não é simétrica, p-valor = 0.0004518369
+RFPW(dados$Val_Ad[which(dados$Grupo == "projeto")])
+#Não é simétrica, p-valor = 5.653403e-06
+
+1 - pnorm(MillerJack(dados$VV2007[which(dados$Grupo == "comparacao")], dados$VV2001[which(dados$Grupo == "comparacao")]))
+#p-valor ~0
+
+1 - pnorm(MillerJack(dados$VV2007[which(dados$Grupo == "projeto")], dados$VV2001[which(dados$Grupo == "projeto")]))
+#p-valor ~= 0.002
+```
+
+* Não pode usar o Teste de WMW pois as distribuições não são simétricas
+* Não pode usar o Teste de Wilcoxon pois a amostra não é pareada
