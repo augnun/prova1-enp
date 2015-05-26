@@ -8,10 +8,12 @@ output: html_document
 ```{r preparacao}
 require(readr)
 require(NSM3)
+require(BSDA)
 dados <- read_csv("Questao 1.csv")
+
 ```
 
-Queremos testar se houve efeito na intervenção no bairro onde já foi executado e estimar se esse efeito seria estatisticamente significativo para a região em estudo.
+Queremos comparar o valor do imóvel em uma região onde já foi feita a intervenção (grupo de comparação), com a região onde se propôs a intervenção (grupo projeto). Devemos controlar os fatores de variação que interferem no Valor Venal dos imóveis
 ```{r valoradd}
 for(i in 1:length(dados[,1])){
   dados$Val_Ad[i] = dados$VV2007[i] - dados$VV2001[i]
@@ -19,6 +21,156 @@ for(i in 1:length(dados[,1])){
 
 
 ```
+
+Controlar para a variação nas áreas dos imóveis, já que a área entra no cálculo do valor venal do imóvel, bem como o tipo de estrutura e a presença de instalação sanitária
+
+Mediana das áreas do grupo de comparação: $91.445 m^2$
+Mediana das áreas do grupo de projeto: $33.85453 m^2$
+```{r var_Tamanho}
+#Tamanho do lote
+for(i in 1:length(dados[,1])){
+  if(dados$Grupo[i] == "comparacao" & dados$AREA[i] < median(as.numeric(dados$AREA[which(dados$Grupo == "comparacao")]))){
+    dados$Tamanho[i] = "pequeno"
+  }
+  if(dados$Grupo[i]== "comparacao" & dados$AREA[i] >= median(as.numeric(dados$AREA[which(dados$Grupo == "comparacao")]))){
+    dados$Tamanho[i] = "grande"
+  }
+  if(dados$Grupo[i] == "projeto" & dados$AREA[i] < median(as.numeric(dados$AREA[which(dados$Grupo == "projeto")]))){
+    dados$Tamanho[i] = "pequeno"
+  }
+  if(dados$Grupo[i]== "projeto" & dados$AREA[i] >= median(as.numeric(dados$AREA[which(dados$Grupo == "projeto")]))){
+    dados$Tamanho[i] = "grande"
+  }
+}
+```
+
+```{r testes das regioes e controles}
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de madeira
+# sem banheiro ou com banheiro externo
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.0008763
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de madeira
+# com banheiro interno
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.05 (não conlusivo)
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de madeira
+# sem banheiro ou com banheiro externo
+# Com Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.0009845
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "grande")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "grande")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de madeira
+# sem banheiro ou com banheiro externo
+# Com Esgotamento sanitário
+# Maiores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.006584
+
+
+
+
+
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Concreto" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Concreto" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de concreto
+# sem banheiro ou com banheiro externo
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.05008 (teste inconclusivo)
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de concreto
+# com banheiro interno
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.05 (teste inconclusivo)
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de concreto
+# sem banheiro/com banheiro externo
+# com Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.0009845
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "grande")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "grande")], alternative="greater")
+# Houve diferencial positivo no Valor Adicionado
+# de concreto
+# sem banheiro/com banheiro externo
+# com Esgotamento sanitário
+# Maiores que a mediana da metragem dos imóveis do grupo 
+# p-valor ~ 0.0007794
+
+wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```{r histogramas}
 hist(dados$VV2001[which(dados$Grupo == "comparacao")], breaks = "scott")
 hist(dados$VV2007[which(dados$Grupo == "comparacao")], breaks = "scott")
@@ -27,6 +179,9 @@ hist(dados$VV2007[which(dados$Grupo == "projeto")], breaks = "scott")
 hist(dados$Val_Ad[which(dados$Grupo == "comparacao")], breaks = "fd")
 hist(dados$Val_Ad[which(dados$Grupo == "projeto")], breaks="fd")
 ```
+
+
+
 
 ```{r densidades}
 plot(density(dados$VV2001[which(dados$Grupo == "comparacao")]))
@@ -38,11 +193,49 @@ plot(density(dados$Val_Ad[which(dados$Grupo == "projeto")]))
 ```
 
 ```{r testes}
-wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao")], dados$VV2001[which(dados$Grupo == "comparacao")], alternative="t")
-#p-valor < 2.2e-16
+wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$VV2001[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+# Houve diferencial positivo no Valor Venal no ano de 2007 em relação ao Valor Venal de 2001 nos 
+# imóveis do grupo de comparação que são
+# de madeira
+# sem banheiro ou com banheiro externo
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo de comparação
+# p-valor ~ 0
 
-wilcox.test(dados$VV2007[which(dados$Grupo == "projeto")], dados$VV2001[which(dados$Grupo == "projeto")], alternative="t")
-#p-valor == 0.0009077
+wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Concreto" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$VV2001[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Concreto" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+
+# Houve diferencial positivo no Valor Venal no ano de 2007 em relação ao Valor Venal de 2001 nos 
+# imóveis do grupo de comparação que são
+# de concreto
+# sem banheiro ou com banheiro externo
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo de comparação
+# p-valor ~ 0
+
+
+wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
+            dados$VV2001[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Interna" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+
+# Houve diferencial positivo no Valor Venal no ano de 2007 em relação ao Valor Venal de 2001 nos 
+# imóveis do grupo de comparação que são
+# de concreto
+# com banheiro interno
+# Sem Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo de comparação
+# p-valor = 0.05
+
+wilcox.test(dados$VV2007[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], 
+            dados$VV2001[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Sim" & dados$Tamanho == "pequeno")], alternative="greater")
+
+# Houve diferencial positivo no Valor Venal no ano de 2007 em relação ao Valor Venal de 2001 nos 
+# imóveis do grupo de comparação que são
+# de concreto
+# sem banheiro ou com banheiro externo
+# Com Esgotamento sanitário
+# Menores que a mediana da metragem dos imóveis do grupo de comparação
+# p-valor ~ 0
 
 RFPW(dados$Val_Ad[which(dados$Grupo == "comparacao")])
 #Não é simétrica, p-valor = 0.0004518369
@@ -54,6 +247,10 @@ RFPW(dados$Val_Ad[which(dados$Grupo == "projeto")])
 
 1 - pnorm(MillerJack(dados$VV2007[which(dados$Grupo == "projeto")], dados$VV2001[which(dados$Grupo == "projeto")]))
 #p-valor ~= 0.002
+
+SIGN.test(dados$VV2007[which(dados$Grupo == "comparacao")], dados$VV2001[which(dados$Grupo == "comparacao")], alt="greater")
+#p-valor ~ 0, o que diz que há diferença nas medianas da distribuição pós e 
+#pré-tratamento do grupo de comparacao
 ```
 
 * Não pode usar o Teste de WMW pois as distribuições não são simétricas
