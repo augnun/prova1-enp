@@ -45,8 +45,8 @@ for(i in 1:length(dados[,1])){
 ```
 
 ```{r testes das regioes e controles}
-wilcox.test(dados$Val_Ad[which(dados$Grupo == "comparacao" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], 
-            dados$Val_Ad[which(dados$Grupo == "projeto" & dados$ESTRUTURA == "Madeira" & dados$Banheiros == "Externa" | dados$Banheiros == "Sem" & dados$Esgoto == "Não" & dados$Tamanho == "pequeno")], alternative="greater")
+p1 = wilcox.test(dados1$Val_Ad[which(dados1$Grupo == "comparacao" & dados1$ESTRUTURA == "Madeira" & dados1$Banheiros == "Externa" | dados1$Banheiros == "Sem" & dados1$Esgoto == "Não" & dados1$Tamanho == "pequeno")], 
+            dados1$Val_Ad[which(dados1$Grupo == "projeto" & dados1$ESTRUTURA == "Madeira" & dados1$Banheiros == "Externa" | dados1$Banheiros == "Sem" & dados1$Esgoto == "Não" & dados1$Tamanho == "pequeno")], alternative="greater")$p.value
 # Houve diferencial positivo no Valor Adicionado
 # de madeira
 # sem banheiro ou com banheiro externo

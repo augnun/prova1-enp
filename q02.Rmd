@@ -8,12 +8,13 @@ output: html_document
 ```{r preparacao}
 require(readr)
 require(timeDate)
-dados <- read_delim("Questao 2.csv", delim=";")
-dados$DIAST <- as.integer(difftime(strptime(dados$TN,format="%d/%m/%Y"), strptime(dados$T0, format="%d/%m/%Y")))
+dados2 <- read_delim("Questao 2.csv", delim=";")
+dados2$DIAST <- as.integer(difftime(strptime(dados2$TN,format="%d/%m/%Y"), strptime(dados2$T0, format="%d/%m/%Y")))
+dados2$DELTA <- dados2$CD4TN - dados2$CD4T0
 ```
 
 ```{r hist_dens}
-hist(dados$IDADE)
+hist(dados2$IDADE)
 
 
 ```
